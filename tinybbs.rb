@@ -8,6 +8,11 @@ end
 require 'webrick'
 
 
+def mkdir_if_not_exist(dp)
+  Dir.mkdir(dp) unless Dir.exist?(dp)
+  raise "Couldn't make a directory '#{dp}'." unless Dir.exist?(dp)
+end
+
 def read_file_if_exist(fp)
   File.exist?(fp) ? IO.read(fp) : ''
 end
@@ -20,6 +25,10 @@ def escape(string)
   str.gsub!(/</,  '&lt;')
   str
 end
+
+mkdir_if_not_exist('./content')
+mkdir_if_not_exist('./ip_addr')
+mkdir_if_not_exist('./host_name')
 
 server = WEBrick::HTTPServer.new({
   :DocumentRoot => './public',
