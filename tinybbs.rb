@@ -15,6 +15,7 @@ trap("INT") { server.shutdown }
 
 server.mount_proc('/') {|req, res|
   res.body = <<HTML
+<!DOCTYPE html>
 <html>
   <head>
   </head>
