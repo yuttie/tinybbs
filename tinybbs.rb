@@ -54,7 +54,7 @@ server.mount_proc('/bbs') {|req, res|
         <button type="submit">書き込む</button>
       </div>
       <div>
-        <textarea name="content" rows="5" cols="40"></textarea>
+        <textarea name="content" rows="5" cols="40" autofocus required></textarea>
       </div>
     </form>
     <div id="view">
