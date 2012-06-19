@@ -47,8 +47,8 @@ HTML
                                              .gsub(/\n/, '<br>')
     posts << '<div class="post">'\
            +   '<div class="header">'\
-           +     "<span class=\"number\">#{i + 1}</span>" + "&nbsp;&nbsp;"\
-           +     "<span class=\"time\">#{time.strftime('%Y/%m/%d %H:%M:%S')}</span>"  + "&nbsp;&nbsp;"\
+           +     "<span class=\"number\">#{i + 1}</span>"\
+           +     "<span class=\"time\">#{time.strftime('%Y/%m/%d %H:%M:%S')}</span>"\
            +     '<span class="host">'\
            +        "<span class=\"host-name\">#{host_name}</span>"\
            +        '&nbsp;'\

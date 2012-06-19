@@ -24,14 +24,17 @@ textarea {
 }
 
 .number {
+  margin-right: 0.5em;
   color: blue;
   font-weight: bold;
 }
 
 .time {
+  margin: 0 0.5em;
 }
 
 .host {
+  margin-left: 0.5em;
   color: silver;
 }
 
