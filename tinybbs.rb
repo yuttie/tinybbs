@@ -3,6 +3,10 @@
 require 'webrick'
 
 
+def read_file_if_exist(fp)
+  File.exist?(fp) ? IO.read(fp) : ''
+end
+
 server = WEBrick::HTTPServer.new({
   :DocumentRoot => './public',
   :DocumentRootOptions => { :FancyIndexing => false },
@@ -29,11 +33,19 @@ HTML
   Dir.glob('./content/*').sort.each_with_index {|fp, i|
     post_id = File.basename(fp)
     time = Time.at(post_id[0...-6].to_i, post_id[-6..-1].to_i)
+    ip_addr = read_file_if_exist("./ip_addr/#{post_id}")
+    host_name = read_file_if_exist("./host_name/#{post_id}")
     content = IO.read("./content/#{post_id}").gsub(/</, '&lt;')\
                                              .gsub(/>/, '&gt;')\
                                              .gsub(/ /, '&nbsp;')\
                                              .gsub(/\n/, '<br>')
-    posts << "<p>" + "<span>#{i + 1}&nbsp;:&nbsp;</span><span>#{time}</span>" + "<p>#{content}</p>" + "</p><hr>"
+    posts << "<p>"\
+           +   "<span>#{i + 1}</span>" + "&nbsp;&nbsp;"\
+           +   "<span>#{time}</span>"  + "&nbsp;&nbsp;"\
+           +   "<span><span>#{host_name}</span>&nbsp;<span>(#{ip_addr})</span></span>"\
+           +   "<p>#{content}</p>"\
+           + "</p>"\
+           + "<hr>"
   }
   res.body += posts.reverse.join
   res.body += <<HTML
