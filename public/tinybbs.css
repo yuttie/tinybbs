@@ -1,0 +1,41 @@
+div {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  padding: 1em 2em;
+}
+
+textarea {
+  width: 40em;
+  height: 10em;
+  border: 1px solid gray;
+  background-color: #eee;
+}
+
+#view {
+  margin: 1em 0;
+}
+
+.post {
+  margin: 2em 0;
+}
+
+.number {
+  color: blue;
+  font-weight: bold;
+}
+
+.time {
+}
+
+.host {
+  color: silver;
+}
+
+.content {
+  padding: 0em;
+  padding-left: 2em;
+}

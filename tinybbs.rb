@@ -21,13 +21,19 @@ server.mount_proc('/bbs') {|req, res|
 <html>
   <head>
     <meta charset="UTF-8" />
+    <link rel="stylesheet" type="text/css" href="tinybbs.css" />
   </head>
   <body>
     <h1>Tiny BBS</h1>
     <form method="POST" action="/bbs/post">
-      <textarea name="content"></textarea>
-      <button type="submit">書き込む</button>
+      <div>
+        <button type="submit">書き込む</button>
+      </div>
+      <div>
+        <textarea name="content"></textarea>
+      </div>
     </form>
+    <div id="view">
 HTML
   posts = []
   Dir.glob('./content/*').sort.each_with_index {|fp, i|
@@ -39,16 +45,22 @@ HTML
                                              .gsub(/>/, '&gt;')\
                                              .gsub(/ /, '&nbsp;')\
                                              .gsub(/\n/, '<br>')
-    posts << "<p>"\
-           +   "<span>#{i + 1}</span>" + "&nbsp;&nbsp;"\
-           +   "<span>#{time}</span>"  + "&nbsp;&nbsp;"\
-           +   "<span><span>#{host_name}</span>&nbsp;<span>(#{ip_addr})</span></span>"\
-           +   "<p>#{content}</p>"\
-           + "</p>"\
-           + "<hr>"
+    posts << '<div class="post">'\
+           +   '<div class="header">'\
+           +     "<span class=\"number\">#{i + 1}</span>" + "&nbsp;&nbsp;"\
+           +     "<span class=\"time\">#{time}</span>"  + "&nbsp;&nbsp;"\
+           +     '<span class="host">'\
+           +        "<span class=\"host-name\">#{host_name}</span>"\
+           +        '&nbsp;'\
+           +        "<span class=\"ip-addr\">(#{ip_addr})</span>"\
+           +     '</span>'\
+           +   '</div>'\
+           +   "<div class=\"content\">#{content}</div>"\
+           + '</div>'
   }
   res.body += posts.reverse.join
   res.body += <<HTML
+    </div>
   </body>
 </html>
 HTML
