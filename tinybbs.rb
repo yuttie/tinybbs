@@ -1,4 +1,5 @@
 #!/usr/bin/ruby -Ku
+# vim: set fileencoding=utf-8:
 
 require 'webrick'
 
