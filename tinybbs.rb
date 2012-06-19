@@ -24,7 +24,6 @@ end
 server = WEBrick::HTTPServer.new({
   :DocumentRoot => './public',
   :DocumentRootOptions => { :FancyIndexing => false },
-  #:BindAddress => '127.0.0.1',
   :BindAddress => '133.5.24.189',
   :Port => 8080})
 trap("INT") { server.shutdown }
