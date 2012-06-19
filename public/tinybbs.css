@@ -9,8 +9,6 @@ body {
 }
 
 textarea {
-  width: 40em;
-  height: 10em;
   border: 1px solid gray;
   background-color: #eee;
 }
