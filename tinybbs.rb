@@ -38,6 +38,7 @@ server = WEBrick::HTTPServer.new({
 trap("INT") { server.shutdown }
 
 server.mount_proc('/bbs') {|req, res|
+  res.content_type = 'text/html'
   res.body = <<HTML
 <!DOCTYPE html>
 <html>
