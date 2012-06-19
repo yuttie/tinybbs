@@ -48,7 +48,7 @@ HTML
     posts << '<div class="post">'\
            +   '<div class="header">'\
            +     "<span class=\"number\">#{i + 1}</span>" + "&nbsp;&nbsp;"\
-           +     "<span class=\"time\">#{time}</span>"  + "&nbsp;&nbsp;"\
+           +     "<span class=\"time\">#{time.strftime('%Y/%m/%d %H:%M:%S')}</span>"  + "&nbsp;&nbsp;"\
            +     '<span class="host">'\
            +        "<span class=\"host-name\">#{host_name}</span>"\
            +        '&nbsp;'\
