@@ -14,7 +14,7 @@ server = WEBrick::HTTPServer.new({
   :Port => 8080})
 trap("INT") { server.shutdown }
 
-server.mount_proc('/') {|req, res|
+server.mount_proc('/bbs') {|req, res|
   res.body = <<HTML
 <!DOCTYPE html>
 <html>
@@ -23,7 +23,7 @@ server.mount_proc('/') {|req, res|
   </head>
   <body>
     <h1>Tiny BBS</h1>
-    <form method="POST" action="/post">
+    <form method="POST" action="/bbs/post">
       <textarea name="content"></textarea>
       <button type="submit">書き込む</button>
     </form>
@@ -40,8 +40,8 @@ HTML
 </html>
 HTML
 }
-server.mount_proc('/post') {|req, res|
+server.mount_proc('/bbs/post') {|req, res|
   IO.write('./data/' + Time.now.to_i.to_s, req.query['content'])
-  res.set_redirect(WEBrick::HTTPStatus::Found, '/')
+  res.set_redirect(WEBrick::HTTPStatus::Found, '/bbs')
 }
 server.start
