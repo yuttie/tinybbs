@@ -21,7 +21,7 @@ server.mount_proc('/') {|req, res|
   <body>
     <h1>Tiny BBS</h1>
 HTML
-  Dir.glob('./data/*').sort.each_with_index {|fp, i|
+  Dir.glob('./data/*').sort.reverse.each_with_index {|fp, i|
     time_str = Time.at(File.basename(fp).to_i).to_s
     content = IO.read(fp)
     res.body += "<p>" + "<span>#{(i + 1).to_s}&nbsp;:&nbsp;</span><span>#{time_str}</span>" + "<p>#{content}</p>" + "</p><hr>"
