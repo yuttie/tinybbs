@@ -41,10 +41,9 @@ HTML
     time = Time.at(post_id[0...-6].to_i, post_id[-6..-1].to_i)
     ip_addr = read_file_if_exist("./ip_addr/#{post_id}")
     host_name = read_file_if_exist("./host_name/#{post_id}")
-    content = IO.read("./content/#{post_id}").gsub(/</, '&lt;')\
-                                             .gsub(/>/, '&gt;')\
-                                             .gsub(/ /, '&nbsp;')\
-                                             .gsub(/\n/, '<br>')
+    content = WEBrick::HTMLUtils.escape(IO.read("./content/#{post_id}"))\
+                                .gsub(/ /, '&nbsp;')\
+                                .gsub(/\n/, '<br>')
     posts << '<div class="post">'\
            +   '<div class="header">'\
            +     "<span class=\"number\">#{i + 1}</span>"\
