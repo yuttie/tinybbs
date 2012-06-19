@@ -36,7 +36,7 @@ HTML
                          .gsub(/>/, '&gt;')\
                          .gsub(/ /, '&nbsp;')\
                          .gsub(/\n/, '<br>')
-    posts << "<p>" + "<span>#{(i + 1).to_s}&nbsp;:&nbsp;</span><span>#{time}</span>" + "<p>#{content}</p>" + "</p><hr>"
+    posts << "<p>" + "<span>#{i + 1}&nbsp;:&nbsp;</span><span>#{time}</span>" + "<p>#{content}</p>" + "</p><hr>"
   }
   res.body += posts.reverse.join
   res.body += <<HTML
