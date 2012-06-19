@@ -45,6 +45,7 @@ server.mount_proc('/bbs') {|req, res|
   <head>
     <meta charset="UTF-8" />
     <link rel="stylesheet" type="text/css" href="tinybbs.css" />
+    <title>Tiny BBS</title>
   </head>
   <body>
     <h1>Tiny BBS</h1>
