@@ -45,9 +45,12 @@ HTML
 HTML
 }
 server.mount_proc('/bbs/post') {|req, res|
+  host_name, ip_addr = req.peeraddr.values_at(2, 3)
   time = Time.now
   post_id = time.to_i.to_s + time.usec.to_s.rjust(6, '0')
-  IO.write('./content/' + post_id, req.query['content'])
+  IO.write('./content/'   + post_id, req.query['content'])
+  IO.write('./ip_addr/'   + post_id, ip_addr)
+  IO.write('./host_name/' + post_id, host_name)
   res.set_redirect(WEBrick::HTTPStatus::Found, '/bbs')
 }
 server.start
