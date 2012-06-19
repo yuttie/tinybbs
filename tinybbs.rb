@@ -20,6 +20,10 @@ server.mount_proc('/') {|req, res|
   </head>
   <body>
     <h1>Tiny BBS</h1>
+    <form method="POST" action="/post">
+      <textarea name="content"></textarea>
+      <button type="submit">書き込む</button>
+    </form>
 HTML
   posts = []
   Dir.glob('./data/*').sort.each_with_index {|fp, i|
@@ -29,10 +33,6 @@ HTML
   }
   res.body += posts.reverse.join
   res.body += <<HTML
-    <form method="POST" action="/post">
-      <textarea name="content"></textarea>
-      <button type="submit">書き込む</button>
-    </form>
   </body>
 </html>
 HTML
