@@ -3,9 +3,6 @@
 require 'webrick'
 
 
-class TinyBBS < WEBrick::HTTPServlet::AbstractServlet
-end
-
 server = WEBrick::HTTPServer.new({
   :DocumentRoot => './public',
   :DocumentRootOptions => { :FancyIndexing => false },
@@ -30,12 +27,12 @@ server.mount_proc('/bbs') {|req, res|
 HTML
   posts = []
   Dir.glob('./content/*').sort.each_with_index {|fp, i|
-    fn = File.basename(fp)
-    time = Time.at(fn[0...-6].to_i, fn[-6..-1].to_i)
-    content = IO.read(fp).gsub(/</, '&lt;')\
-                         .gsub(/>/, '&gt;')\
-                         .gsub(/ /, '&nbsp;')\
-                         .gsub(/\n/, '<br>')
+    post_id = File.basename(fp)
+    time = Time.at(post_id[0...-6].to_i, post_id[-6..-1].to_i)
+    content = IO.read("./content/#{post_id}").gsub(/</, '&lt;')\
+                                             .gsub(/>/, '&gt;')\
+                                             .gsub(/ /, '&nbsp;')\
+                                             .gsub(/\n/, '<br>')
     posts << "<p>" + "<span>#{i + 1}&nbsp;:&nbsp;</span><span>#{time}</span>" + "<p>#{content}</p>" + "</p><hr>"
   }
   res.body += posts.reverse.join
@@ -44,6 +41,7 @@ HTML
 </html>
 HTML
 }
+
 server.mount_proc('/bbs/post') {|req, res|
   host_name, ip_addr = req.peeraddr.values_at(2, 3)
   time = Time.now
@@ -53,4 +51,5 @@ server.mount_proc('/bbs/post') {|req, res|
   IO.write('./host_name/' + post_id, host_name)
   res.set_redirect(WEBrick::HTTPStatus::Found, '/bbs')
 }
+
 server.start
