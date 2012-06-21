@@ -6,6 +6,7 @@ if RUBY_VERSION >= '1.9'
 end
 
 require 'webrick'
+require 'uri'
 
 
 def mkdir_if_not_exist(dp)
@@ -15,6 +16,10 @@ end
 
 def read_file_if_exist(fp)
   File.exist?(fp) ? IO.read(fp) : ''
+end
+
+def make_links(str)
+  str.gsub(URI.regexp, '<a href="\&">\&</a>')
 end
 
 def escape(string)
@@ -72,7 +77,7 @@ HTML
     time = Time.at(post_id[0...-6].to_i, post_id[-6..-1].to_i)
     ip_addr = read_file_if_exist("./ip_addr/#{post_id}")
     host_name = read_file_if_exist("./host_name/#{post_id}")
-    content = show_spaces(escape(IO.read("./content/#{post_id}")))
+    content = show_spaces(escape(make_links(IO.read("./content/#{post_id}"))))
     posts << '<div class="post">'\
            +   '<div class="header">'\
            +     "<span class=\"number\">#{i + 1}</span>"\
