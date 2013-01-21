@@ -3,9 +3,10 @@ div {
   padding: 0;
 }
 
-body {
+html, body {
   margin: 0;
   padding: 1em 2em;
+  height: 100%;
 }
 
 textarea {
@@ -22,52 +23,37 @@ textarea {
   overflow-y:auto;
 }
 
+#column-container {
+  position: absolute;
+  top: 200px;
+  bottom: 100px;
+}
+.column {
+  height: 100%;
+  width: 49%;
+  display: inline-block;
+  vertical-align: top;
+}
+
 .left_view {
   margin: 4em 0;
 
   height: 100%;
-  position: absolute;
-  width: 50%;
   overflow-x: hidden;
   overflow-y:auto;
 }
 .left_view_title {
   margin: 1em 0;
-
-  position: absolute;
 }
 
 .center_view {
-  margin: 4em 0;
-
+  margin: 1em 0;
   height: 100%;
-  float* right;
-  width: 50%;
   overflow-x: hidden;
   overflow-y:auto;
 }
 .center_view_title {
   margin: 1em 0;
-
-  position: absolute;
-  left: 470px;
-}
-
-.right_view {
-  margin: 4em 0;
-
-  height: 100%;
-  position: absolute;
-  left: 900px;
-  width: 350px;
-  overflow-x: hidden;
-  overflow-y:auto;
-}
-.right_view_title {
-  margin: 1em 0;
-
-  position: absolute;
-  left: 900px;
 }
 
 #radio_button label {

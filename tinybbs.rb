@@ -164,10 +164,11 @@ HTML
     </div>
     <div class="cl1"></div>
     
-    <div class="left_view_title">
-      <h3>投稿</h3>
-    </div>
-    <div id="teacher_view">
+    <div>
+      <div class="left_view_title">
+        <h3>投稿</h3>
+      </div>
+      <div id="teacher_view">
 HTML
   posts = []
   Dir.glob('./content/*').sort.each_with_index {|fp, i|
@@ -196,6 +197,7 @@ HTML
   }
   res.body += posts.reverse.join
   res.body += <<HTML
+      </div>
     </div>
   </body>
 </html>
@@ -243,10 +245,12 @@ server.mount_proc('/bbs') {|req, res|
         <textarea name="content" rows="5" cols="40" autofocus required></textarea>
       </div>
     </form>
-    <div class="left_view_title">
-      <h3>グループ内投稿</h3>
-    </div>
-    <div class="left_view">
+    <div id="column-container">
+      <div class="column">
+        <div class="left_view_title">
+          <h3>グループ内投稿</h3>
+        </div>
+        <div class="left_view">
 HTML
   all_posts = []
   posts = []
@@ -289,14 +293,19 @@ HTML
   }
   res.body += posts.reverse.join
   res.body += <<HTML
-    </div>
-    <div class="center_view_title">
-      <h3>全体投稿</h3>
-    </div>
-    <div class="center_view">
+        </div>
+      </div>
+
+      <div class="column">
+        <div class="center_view_title">
+          <h3>全体投稿</h3>
+        </div>
+        <div class="center_view">
 HTML
   res.body += all_posts.reverse.join
   res.body += <<HTML
+      </div>
+    </div>
   </div>
   </body>
 </html>
