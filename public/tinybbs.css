@@ -13,7 +13,82 @@ textarea {
   background-color: #eee;
 }
 
-#view {
+#teacher_view {
+  margin: 4em 0;
+
+  height: 100%;
+  position: absolute;
+  overflow-x: hidden;
+  overflow-y:auto;
+}
+
+.left_view {
+  margin: 4em 0;
+
+  height: 100%;
+  position: absolute;
+  width: 50%;
+  overflow-x: hidden;
+  overflow-y:auto;
+}
+.left_view_title {
+  margin: 1em 0;
+
+  position: absolute;
+}
+
+.center_view {
+  margin: 4em 0;
+
+  height: 100%;
+  float* right;
+  width: 50%;
+  overflow-x: hidden;
+  overflow-y:auto;
+}
+.center_view_title {
+  margin: 1em 0;
+
+  position: absolute;
+  left: 470px;
+}
+
+.right_view {
+  margin: 4em 0;
+
+  height: 100%;
+  position: absolute;
+  left: 900px;
+  width: 350px;
+  overflow-x: hidden;
+  overflow-y:auto;
+}
+.right_view_title {
+  margin: 1em 0;
+
+  position: absolute;
+  left: 900px;
+}
+
+#radio_button label {
+  display: inline-block;
+  width: 50px;
+}
+
+.text_form {
+  float: left;
+  margin-right: 30px;
+}
+
+.radio_form {
+  
+}
+
+.cl1 {
+  clear: both;
+}
+
+.tag_form {
   margin: 1em 0;
 }
 
