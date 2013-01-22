@@ -8,7 +8,7 @@ end
 require 'webrick'
 require 'uri'
 
-$g_id = 21
+NUM_GROUPS = 21
 
 def mkdir_if_not_exist(dp)
   Dir.mkdir(dp) unless Dir.exist?(dp)
@@ -42,13 +42,13 @@ end
 def check_group(c_ip_addr,ip_addr)
   str_cip = c_ip_addr[c_ip_addr.size-2,c_ip_addr.size]
   str_ip = ip_addr[ip_addr.size-2,ip_addr.size]
-  if(str_cip.to_i % $g_id == str_ip.to_i % $g_id)
+  if(str_cip.to_i % NUM_GROUPS == str_ip.to_i % NUM_GROUPS)
     1
   end
 end
 
 def search_res(gid_query,key_url,content,host_name,ip_addr)
-  flag_gid = ip_addr[ip_addr.size-2,ip_addr.size].to_i % $g_id
+  flag_gid = ip_addr[ip_addr.size-2,ip_addr.size].to_i % NUM_GROUPS
   unless key_url.nil? || key_url.empty?
     flag_key = fit_res(key_url,content,host_name,ip_addr)
   else
@@ -133,7 +133,7 @@ server.mount_proc('/admin') {|req, res|
       <div id="radio_button">
 HTML
   radio = []
-  for num in 0..$g_id do
+  for num in 0..NUM_GROUPS do
     if gid_query.to_i == num
       if num.to_i == 0
         radio << "<label><input type=\"radio\" name=\"group_num\" value=#{num} checked>all</label>"
