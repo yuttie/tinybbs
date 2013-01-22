@@ -232,7 +232,7 @@ server.mount_proc('/bbs') {|req, res|
 <html>
   <head>
     <meta charset="UTF-8" />
-    <link rel="stylesheet" type="text/css" href="tinybbs.css" />
+    <link rel="stylesheet" type="text/css" href="/tinybbs.css" />
     <title>Tiny BBS</title>
   </head>
   <body>
