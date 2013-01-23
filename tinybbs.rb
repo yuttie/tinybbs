@@ -23,6 +23,13 @@ def make_links(str)
   str.gsub(URI.regexp, '<a href="\&">\&</a>')
 end
 
+def make_res_anchors(str, id_base = "post")
+  str.gsub(/(&gt;|＞){1,2}([0-9０-９]+)/) {
+    post_id = id_base + $2.tr('０-９', '0-9')
+    "<a href=\"##{post_id}\">#{$&}</a>"
+  }
+end
+
 def escape(string)
   str = string ? string.dup : ""
   str.gsub!(/&/,  '&amp;')
@@ -179,13 +186,13 @@ HTML
     time = Time.at(post_id[0...-6].to_i, post_id[-6..-1].to_i)
     ip_addr = read_file_if_exist("./ip_addr/#{post_id}")
     host_name = read_file_if_exist("./host_name/#{post_id}")
-    content = show_spaces(escape(make_links(IO.read("./content/#{post_id}"))))
+    content = make_res_anchors(make_links(show_spaces(escape(IO.read("./content/#{post_id}")))))
 
     if(search_res(current_gid,query,content,host_name,ip_addr) == 1)
       if query && query !~ /^(host_name|ip_addr)=/
         content.gsub!(Regexp.compile(query), '<strong>\0</strong>')
       end
-      posts << '<div class="post">'\
+      posts << "<div id=\"post#{i + 1}\" class=\"post\">"\
             +   '<div class="header">'\
             +     "<span class=\"number\">#{i + 1}</span>"\
             +     "<span class=\"time\">#{time.strftime('%Y/%m/%d %H:%M:%S')}</span>"\
@@ -265,9 +272,9 @@ HTML
     time = Time.at(post_id[0...-6].to_i, post_id[-6..-1].to_i)
     ip_addr = read_file_if_exist("./ip_addr/#{post_id}")
     host_name = read_file_if_exist("./host_name/#{post_id}")
-    content = show_spaces(escape(make_links(IO.read("./content/#{post_id}"))))
+    content = make_res_anchors(make_links(show_spaces(escape(IO.read("./content/#{post_id}")))), "apost")
 
-    all_posts << '<div class="post">'\
+    all_posts << "<div id=\"apost#{i + 1}\" class=\"post\">"\
           +   '<div class="header">'\
           +     "<span class=\"number\">#{i + 1}</span>"\
           +     "<span class=\"time\">#{time.strftime('%Y/%m/%d %H:%M:%S')}</span>"\
@@ -280,7 +287,8 @@ HTML
           +   "<div class=\"content\">#{content}</div>"\
           + '</div>'
     if(check_group(c_ip_addr,ip_addr) == 1 )
-      posts << '<div class="post">'\
+      content = make_res_anchors(make_links(show_spaces(escape(IO.read("./content/#{post_id}")))))
+      posts << "<div id=\"post#{i + 1}\" class=\"post\">"\
             +   '<div class="header">'\
             +     "<span class=\"number\">#{i + 1}</span>"\
             +     "<span class=\"time\">#{time.strftime('%Y/%m/%d %H:%M:%S')}</span>"\
