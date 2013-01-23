@@ -146,8 +146,8 @@ HTML
       radio << "<label><input type=\"radio\" name=\"group_num\" value=#{num}>#{num}</label>"
     end
   end
-  res.body += radio.reverse.join
-  
+  res.body += radio.join
+
   if defined?key_url
     res.body += <<HTML
       <label><input type="text" size="30" name="key" value=#{key_url}></label>
