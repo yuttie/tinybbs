@@ -162,7 +162,7 @@ HTML
       </form>
     </div>
     <div class="cl1"></div>
-    
+
     <div>
       <div class="left_view_title">
         <h3>投稿</h3>
@@ -178,7 +178,7 @@ HTML
     ip_addr = read_file_if_exist("./ip_addr/#{post_id}")
     host_name = read_file_if_exist("./host_name/#{post_id}")
     content = show_spaces(escape(make_links(IO.read("./content/#{post_id}"))))
-    
+
     if(search_res(current_gid,key_url,content,host_name,ip_addr) == 1)
       posts << '<div class="post">'\
             +   '<div class="header">'\
@@ -262,7 +262,7 @@ HTML
     ip_addr = read_file_if_exist("./ip_addr/#{post_id}")
     host_name = read_file_if_exist("./host_name/#{post_id}")
     content = show_spaces(escape(make_links(IO.read("./content/#{post_id}"))))
-    
+
     all_posts << '<div class="post">'\
           +   '<div class="header">'\
           +     "<span class=\"number\">#{i + 1}</span>"\
