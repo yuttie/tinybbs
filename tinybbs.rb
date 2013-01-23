@@ -162,7 +162,6 @@ HTML
         </div>
       </form>
     </div>
-    <div class="cl1"></div>
 
     <div>
       <div class="left_view_title">
