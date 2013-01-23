@@ -104,8 +104,8 @@ trap("INT") { server.shutdown }
 
 #教員用
 server.mount_proc('/admin') {|req, res|
-  unless req.query["group_id"].nil? || req.query["group_id"].empty?
-    current_gid = req.query["group_id"].to_i
+  unless req.query["group"].nil? || req.query["group"].empty?
+    current_gid = req.query["group"].to_i
   else
     current_gid = nil
   end
@@ -131,15 +131,15 @@ server.mount_proc('/admin') {|req, res|
 HTML
   radio = []
   if current_gid == nil
-    radio << '<label><input type="radio" name="group_num" value="" checked>All</label>'
+    radio << '<label><input type="radio" name="group" value="" checked>All</label>'
   else
-    radio << '<label><input type="radio" name="group_num" value="">All</label>'
+    radio << '<label><input type="radio" name="group" value="">All</label>'
   end
   for num in 1..NUM_GROUPS do
     if num == current_gid
-      radio << "<label><input type=\"radio\" name=\"group_num\" value=#{num} checked>#{num}</label>"
+      radio << "<label><input type=\"radio\" name=\"group\" value=#{num} checked>#{num}</label>"
     else
-      radio << "<label><input type=\"radio\" name=\"group_num\" value=#{num}>#{num}</label>"
+      radio << "<label><input type=\"radio\" name=\"group\" value=#{num}>#{num}</label>"
     end
   end
   res.body += '<div><label>Group:</label>' + '<div id="radio_button">' + radio.join + '</div></div>'
@@ -207,10 +207,10 @@ HTML
 }
 
 server.mount_proc('/admin/page') {|req, res|
- group_id = req.query["group_num"]
+ group_id = req.query["group"]
  query = ERB::Util.url_encode(req.query["q"])
 
- res.set_redirect(WEBrick::HTTPStatus::Found, "/admin?group_id=#{group_id}&q=#{query}")
+ res.set_redirect(WEBrick::HTTPStatus::Found, "/admin?group=#{group_id}&q=#{query}")
 }
 
 server.mount_proc('/admin/post') {|req, res|
