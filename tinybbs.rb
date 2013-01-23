@@ -133,15 +133,14 @@ server.mount_proc('/admin') {|req, res|
       <div id="radio_button">
 HTML
   radio = []
-  for num in 0..NUM_GROUPS do
+  if current_gid == 0
+    radio << '<label><input type="radio" name="group_num" value="" checked>all</label>'
+  else
+    radio << '<label><input type="radio" name="group_num" value="">all</label>'
+  end
+  for num in 1..NUM_GROUPS do
     if num == current_gid
-      if num.to_i == 0
-        radio << "<label><input type=\"radio\" name=\"group_num\" value=#{num} checked>all</label>"
-      else
-        radio << "<label><input type=\"radio\" name=\"group_num\" value=#{num} checked>#{num}</label>"
-      end
-    elsif num.to_i == 0
-      radio << "<label><input type=\"radio\" name=\"group_num\" value=#{num}>all</label>"
+      radio << "<label><input type=\"radio\" name=\"group_num\" value=#{num} checked>#{num}</label>"
     else
       radio << "<label><input type=\"radio\" name=\"group_num\" value=#{num}>#{num}</label>"
     end
