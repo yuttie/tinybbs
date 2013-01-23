@@ -156,15 +156,7 @@ HTML
   end
   res.body += radio.join
 
-  if query
-    res.body += <<HTML
-          <label><input type="text" size="30" name="q" value=#{query}></label>
-HTML
-  else
-    res.body += <<HTML
-          <label><input type="text" size="30" name="q"></label>
-HTML
-  end
+  res.body += "<label><input type=\"text\" size=\"30\" name=\"q\" value=#{query || ""}></label>"
 
   res.body += <<HTML
         </div>
