@@ -118,19 +118,19 @@ server.mount_proc('/admin') {|req, res|
   <body>
     <h1>Tiny BBS</h1>
     <div class="form">
-    <form method="POST" class="text_form" action="/admin/post">
-      <div>
-        <button type="submit">書き込む</button>
-      </div>
-      <div>
-        <textarea name="content" rows="5" cols="40" autofocus required></textarea>
-      </div>
-    </form>
+      <form method="POST" class="text_form" action="/admin/post">
+        <div>
+          <button type="submit">書き込む</button>
+        </div>
+        <div>
+          <textarea name="content" rows="5" cols="40" autofocus required></textarea>
+        </div>
+      </form>
     </div>
     <div class="form">
-    <form method="post" class="radio_form" action="/admin/page">
-      <p><input type="submit" value="更新"></p>
-      <div id="radio_button">
+      <form method="post" class="radio_form" action="/admin/page">
+        <p><input type="submit" value="更新"></p>
+        <div id="radio_button">
 HTML
   radio = []
   if current_gid == nil
@@ -149,17 +149,17 @@ HTML
 
   if defined?key_url
     res.body += <<HTML
-      <label><input type="text" size="30" name="key" value=#{key_url}></label>
+          <label><input type="text" size="30" name="key" value=#{key_url}></label>
 HTML
   else
     res.body += <<HTML
-      <label><input type="text" size="30" name="key"></label>
+          <label><input type="text" size="30" name="key"></label>
 HTML
   end
 
   res.body += <<HTML
-    </div>
-    </form>
+        </div>
+      </form>
     </div>
     <div class="cl1"></div>
     
