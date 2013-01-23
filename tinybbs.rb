@@ -52,7 +52,7 @@ def search_res(gid,key_url,content,host_name,ip_addr)
   unless key_url.nil? || key_url.empty?
     flag_key = fit_res(key_url,content,host_name,ip_addr)
   else
-    if gid == 0
+    if gid == nil
       return 1
     elsif flag_gid.to_i == gid-1
       return 1
@@ -60,7 +60,7 @@ def search_res(gid,key_url,content,host_name,ip_addr)
   end
 
   if flag_key == 1
-    if gid == 0
+    if gid == nil
       return 1
     elsif flag_gid.to_i == gid-1
       return 1
@@ -100,7 +100,7 @@ server.mount_proc('/admin') {|req, res|
   unless req.query["group_id"].nil? || req.query["group_id"].empty?
     current_gid = req.query["group_id"].to_i
   else
-    current_gid = 0
+    current_gid = nil
   end
   unless req.query["key"].nil? || req.query["key"].empty?
     key_url = req.query["key"].force_encoding("UTF-8")
@@ -133,7 +133,7 @@ server.mount_proc('/admin') {|req, res|
       <div id="radio_button">
 HTML
   radio = []
-  if current_gid == 0
+  if current_gid == nil
     radio << '<label><input type="radio" name="group_num" value="" checked>all</label>'
   else
     radio << '<label><input type="radio" name="group_num" value="">all</label>'
