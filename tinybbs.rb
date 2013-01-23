@@ -97,12 +97,12 @@ trap("INT") { server.shutdown }
 
 #教員用
 server.mount_proc('/admin') {|req, res|
-  unless ((req.query["group_id"].nil? || req.query["group_id"].empty?))
+  unless req.query["group_id"].nil? || req.query["group_id"].empty?
     gid_query = req.query["group_id"]
   else
     gid_query = 0
   end
-  unless((req.query["key"].nil? || req.query["key"].empty?))
+  unless req.query["key"].nil? || req.query["key"].empty?
     key_url = req.query["key"].force_encoding("UTF-8")
   end
 
