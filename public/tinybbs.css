@@ -1,12 +1,21 @@
-div {
+* {
   margin: 0;
   padding: 0;
 }
 
 html, body {
-  margin: 0;
-  padding: 1em 2em;
   height: 100%;
+  overflow: hidden;
+}
+
+body {
+  padding-left: 2em;
+  padding-right: 2em;
+}
+
+input[type="text"] {
+  border: 1px solid gray;
+  background-color: #eee;
 }
 
 textarea {
@@ -14,56 +23,115 @@ textarea {
   background-color: #eee;
 }
 
-#teacher_view {
-  margin: 4em 0;
+h1 {
+  text-align: center;
+  margin: 0;
+  padding: 1em 0;
+}
 
-  height: 100%;
-  position: absolute;
-  overflow-x: hidden;
-  overflow-y:auto;
+form {
+  width: 35em;
+  margin: 1em auto;
+}
+
+form textarea {
+  font-size: 1.2em;
+  width: 100%;
+}
+
+form input[type="text"] {
+  font-size: 1.2em;
+  width: 100%;
+}
+
+form button {
+  padding: 0.2em 0.4em;
+}
+
+.form-toolbar {
+  text-align: right;
+  margin: 0.2em;
+}
+
+#form-container-admin {
+  text-align: center;
+}
+
+#form-container-admin > form {
+  display: inline-block;
+  width: 49%;
+  text-align: left;
 }
 
 #column-container {
   position: absolute;
-  top: 200px;
-  bottom: 100px;
+  top: 17em;
+  bottom: 0;
+  width: auto;
+  left: 0;
+  right: 0;
+  margin: 0 2em;
+  text-align: center;
 }
+
+#column-container-admin {
+  position: absolute;
+  top: 18em;
+  bottom: 0;
+  width: auto;
+  left: 0;
+  right: 0;
+  margin: 0 2em;
+  text-align: center;
+}
+
 .column {
   height: 100%;
   width: 49%;
   display: inline-block;
   vertical-align: top;
+  text-align: left;
 }
 
-.left_view {
-  margin: 4em 0;
-
+.column-admin {
   height: 100%;
-  overflow-x: hidden;
-  overflow-y:auto;
-}
-.left_view_title {
-  margin: 1em 0;
+  width: 100%;
+  display: inline-block;
+  vertical-align: top;
+  text-align: left;
 }
 
-.center_view {
-  margin: 1em 0;
-  height: 100%;
-  overflow-x: hidden;
-  overflow-y:auto;
+.view_title {
+  background-color: lightgray;
+  position: relative;
+  top: -2em;
 }
-.center_view_title {
-  margin: 1em 0;
+
+.view_title h3 {
+  margin: 0;
+  padding: 0.5em;
+  font-size: 100%;
+  line-height: 100%;
+  text-align: center;
+}
+
+.view {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  border-left: 1px solid lightgray;
+  border-right: 1px solid lightgray;
+  border-bottom: 1px solid lightgray;
+  padding-left: 1em;
+  position: relative;
+  top: -2em;
+  height: 100%;
 }
 
 #radio_button label {
   display: inline-block;
-  width: 50px;
-}
-
-.text_form {
-  float: left;
-  margin-right: 30px;
+  width: 3em;
 }
 
 .post {
@@ -88,4 +156,8 @@ textarea {
 .content {
   padding: 0em;
   padding-left: 2em;
+}
+
+.content strong {
+  color: red;
 }

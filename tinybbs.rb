@@ -126,26 +126,14 @@ server.mount_proc('/admin') {|req, res|
   </head>
   <body>
     <h1>Tiny BBS</h1>
-    <div class="form">
-      <form method="POST" class="text_form" action="/admin/post">
-        <div>
-          <button type="submit">書き込む</button>
-        </div>
-        <div>
-          <textarea name="content" rows="5" cols="40" autofocus required></textarea>
-        </div>
-      </form>
-    </div>
-    <div class="form">
+    <div id="form-container-admin">
       <form method="post" class="radio_form" action="/admin/page">
-        <p><input type="submit" value="更新"></p>
-        <div id="radio_button">
 HTML
   radio = []
   if current_gid == nil
-    radio << '<label><input type="radio" name="group_num" value="" checked>all</label>'
+    radio << '<label><input type="radio" name="group_num" value="" checked>All</label>'
   else
-    radio << '<label><input type="radio" name="group_num" value="">all</label>'
+    radio << '<label><input type="radio" name="group_num" value="">All</label>'
   end
   for num in 1..NUM_GROUPS do
     if num == current_gid
@@ -154,20 +142,31 @@ HTML
       radio << "<label><input type=\"radio\" name=\"group_num\" value=#{num}>#{num}</label>"
     end
   end
-  res.body += radio.join
+  res.body += '<div><label>Group:</label>' + '<div id="radio_button">' + radio.join + '</div></div>'
 
-  res.body += "<label><input type=\"text\" size=\"30\" name=\"q\" value=#{query || ""}></label>"
+  res.body += "<div><label for=\"query-box\">Regexp Query:</label><div><input id=\"query-box\" type=\"text\" name=\"q\" value=#{query || ""}></div></div>"
 
   res.body += <<HTML
+        <div class="form-toolbar">
+          <button type="submit">更新</button>
+        </div>
+      </form>
+      <form method="POST" class="text_form" action="/admin/post">
+        <div>
+          <textarea name="content" rows="5" autofocus required></textarea>
+        </div>
+        <div class="form-toolbar">
+          <button type="submit">書き込む</button>
         </div>
       </form>
     </div>
 
-    <div>
-      <div class="left_view_title">
-        <h3>投稿</h3>
-      </div>
-      <div id="teacher_view">
+    <div id="column-container-admin">
+      <div class="column-admin">
+        <div class="view_title">
+          <h3>投稿</h3>
+        </div>
+        <div class="view">
 HTML
   posts = []
   Dir.glob('./content/*').sort.each_with_index {|fp, i|
@@ -199,6 +198,7 @@ HTML
   }
   res.body += posts.reverse.join
   res.body += <<HTML
+        </div>
       </div>
     </div>
   </body>
@@ -240,18 +240,18 @@ server.mount_proc('/bbs') {|req, res|
     <h1>Tiny BBS</h1>
     <form method="POST" action="/bbs/post">
       <div>
-        <button type="submit">書き込む</button>
+        <textarea name="content" rows="5" autofocus required></textarea>
       </div>
-      <div>
-        <textarea name="content" rows="5" cols="40" autofocus required></textarea>
+      <div class="form-toolbar">
+        <button type="submit">書き込む</button>
       </div>
     </form>
     <div id="column-container">
       <div class="column">
-        <div class="left_view_title">
+        <div class="view_title">
           <h3>グループ内投稿</h3>
         </div>
-        <div class="left_view">
+        <div class="view">
 HTML
   all_posts = []
   posts = []
@@ -299,10 +299,10 @@ HTML
       </div>
 
       <div class="column">
-        <div class="center_view_title">
+        <div class="view_title">
           <h3>全体投稿</h3>
         </div>
-        <div class="center_view">
+        <div class="view">
 HTML
   res.body += all_posts.reverse.join
   res.body += <<HTML
