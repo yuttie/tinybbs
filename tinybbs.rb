@@ -127,7 +127,7 @@ server.mount_proc('/admin') {|req, res|
   <body>
     <h1>Tiny BBS</h1>
     <div id="form-container-admin">
-      <form method="post" class="radio_form" action="/admin/page">
+      <form method="GET" class="radio_form" action="/admin">
 HTML
   radio = []
   if current_gid == nil
@@ -204,13 +204,6 @@ HTML
   </body>
 </html>
 HTML
-}
-
-server.mount_proc('/admin/page') {|req, res|
- group_id = req.query["group"]
- query = ERB::Util.url_encode(req.query["q"])
-
- res.set_redirect(WEBrick::HTTPStatus::Found, "/admin?group=#{group_id}&q=#{query}")
 }
 
 server.mount_proc('/admin/post') {|req, res|
