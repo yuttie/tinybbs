@@ -102,8 +102,8 @@ server.mount_proc('/admin') {|req, res|
   else
     current_gid = nil
   end
-  unless req.query["key"].nil? || req.query["key"].empty?
-    key_url = req.query["key"].force_encoding("UTF-8")
+  unless req.query["q"].nil? || req.query["q"].empty?
+    key_url = req.query["q"].force_encoding("UTF-8")
   end
 
   res.content_type = 'text/html'
@@ -149,11 +149,11 @@ HTML
 
   if defined?key_url
     res.body += <<HTML
-          <label><input type="text" size="30" name="key" value=#{key_url}></label>
+          <label><input type="text" size="30" name="q" value=#{key_url}></label>
 HTML
   else
     res.body += <<HTML
-          <label><input type="text" size="30" name="key"></label>
+          <label><input type="text" size="30" name="q"></label>
 HTML
   end
 
@@ -205,10 +205,10 @@ HTML
 
 server.mount_proc('/admin/page') {|req, res|
  group_id = req.query["group_num"]
- keyword = req.query["key"]
+ keyword = req.query["q"]
  keyword_url = ERB::Util.url_encode(keyword)
 
- res.set_redirect(WEBrick::HTTPStatus::Found, "/admin?group_id=#{group_id}&key=#{keyword_url}")
+ res.set_redirect(WEBrick::HTTPStatus::Found, "/admin?group_id=#{group_id}&q=#{keyword_url}")
 }
 
 server.mount_proc('/admin/post') {|req, res|
