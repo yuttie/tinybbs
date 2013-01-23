@@ -26,7 +26,7 @@ textarea {
 h1 {
   text-align: center;
   margin: 0;
-  padding: 1em 0;
+  padding: 0.5em 0;
 }
 
 form {
@@ -45,7 +45,7 @@ form input[type="text"] {
 }
 
 form button {
-  padding: 0.2em 0.4em;
+  padding: 0.2em 1.0em;
 }
 
 .form-toolbar {
@@ -65,7 +65,7 @@ form button {
 
 #column-container {
   position: absolute;
-  top: 17em;
+  top: 18em;
   bottom: 0;
   width: auto;
   left: 0;
