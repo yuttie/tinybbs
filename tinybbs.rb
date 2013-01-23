@@ -182,6 +182,9 @@ HTML
     content = show_spaces(escape(make_links(IO.read("./content/#{post_id}"))))
 
     if(search_res(current_gid,query,content,host_name,ip_addr) == 1)
+      unless query =~ /^(host_name|ip_addr)=/
+        content.gsub!(Regexp.compile(query), '<strong>\0</strong>')
+      end
       posts << '<div class="post">'\
             +   '<div class="header">'\
             +     "<span class=\"number\">#{i + 1}</span>"\
