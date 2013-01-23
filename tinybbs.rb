@@ -47,10 +47,10 @@ def check_group(c_ip_addr,ip_addr)
   end
 end
 
-def search_res(gid,key_url,content,host_name,ip_addr)
+def search_res(gid,query,content,host_name,ip_addr)
   flag_gid = ip_addr[ip_addr.size-2,ip_addr.size].to_i % NUM_GROUPS
-  unless key_url.nil? || key_url.empty?
-    flag_key = fit_res(key_url,content,host_name,ip_addr)
+  unless query.nil? || query.empty?
+    flag_query = fit_res(query,content,host_name,ip_addr)
   else
     if gid == nil
       return 1
@@ -59,7 +59,7 @@ def search_res(gid,key_url,content,host_name,ip_addr)
     end
   end
 
-  if flag_key == 1
+  if flag_query == 1
     if gid == nil
       return 1
     elsif flag_gid.to_i == gid-1
@@ -68,17 +68,17 @@ def search_res(gid,key_url,content,host_name,ip_addr)
   end
 end
 
-def fit_res(key_url,content,host_name,ip_addr)
-  if(key_url =~ /^host_name=/)
-    if(Regexp.compile(key_url.sub("host_name=", "")) =~ host_name)
+def fit_res(query,content,host_name,ip_addr)
+  if(query =~ /^host_name=/)
+    if(Regexp.compile(query.sub("host_name=", "")) =~ host_name)
       return 1
     end
-  elsif(key_url =~ /^ip_addr=/)
-    if(Regexp.compile(key_url.sub("ip_addr=", "")) =~ ip_addr)
+  elsif(query =~ /^ip_addr=/)
+    if(Regexp.compile(query.sub("ip_addr=", "")) =~ ip_addr)
       return 1
     end
   else
-    if(Regexp.compile(key_url) =~ content)
+    if(Regexp.compile(query) =~ content)
       return 1
     end
   end
@@ -103,7 +103,9 @@ server.mount_proc('/admin') {|req, res|
     current_gid = nil
   end
   unless req.query["q"].nil? || req.query["q"].empty?
-    key_url = req.query["q"].force_encoding("UTF-8")
+    query = req.query["q"].force_encoding("UTF-8")
+  else
+    query = nil
   end
 
   res.content_type = 'text/html'
@@ -147,9 +149,9 @@ HTML
   end
   res.body += radio.join
 
-  if defined?key_url
+  if query
     res.body += <<HTML
-          <label><input type="text" size="30" name="q" value=#{key_url}></label>
+          <label><input type="text" size="30" name="q" value=#{query}></label>
 HTML
   else
     res.body += <<HTML
@@ -179,7 +181,7 @@ HTML
     host_name = read_file_if_exist("./host_name/#{post_id}")
     content = show_spaces(escape(make_links(IO.read("./content/#{post_id}"))))
 
-    if(search_res(current_gid,key_url,content,host_name,ip_addr) == 1)
+    if(search_res(current_gid,query,content,host_name,ip_addr) == 1)
       posts << '<div class="post">'\
             +   '<div class="header">'\
             +     "<span class=\"number\">#{i + 1}</span>"\
@@ -205,10 +207,9 @@ HTML
 
 server.mount_proc('/admin/page') {|req, res|
  group_id = req.query["group_num"]
- keyword = req.query["q"]
- keyword_url = ERB::Util.url_encode(keyword)
+ query = ERB::Util.url_encode(req.query["q"])
 
- res.set_redirect(WEBrick::HTTPStatus::Found, "/admin?group_id=#{group_id}&q=#{keyword_url}")
+ res.set_redirect(WEBrick::HTTPStatus::Found, "/admin?group_id=#{group_id}&q=#{query}")
 }
 
 server.mount_proc('/admin/post') {|req, res|
