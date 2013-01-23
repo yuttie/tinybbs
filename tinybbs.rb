@@ -77,15 +77,15 @@ end
 
 def fit_res(query,content,host_name,ip_addr)
   if(query =~ /^host=/)
-    if(Regexp.compile(query.sub("host=", "")) =~ host_name)
+    if(Regexp.compile(query.sub("host=", ""), Regexp::IGNORECASE) =~ host_name)
       return 1
     end
   elsif(query =~ /^ip=/)
-    if(Regexp.compile(query.sub("ip=", "")) =~ ip_addr)
+    if(Regexp.compile(query.sub("ip=", ""), Regexp::IGNORECASE) =~ ip_addr)
       return 1
     end
   else
-    if(Regexp.compile(query) =~ content)
+    if(Regexp.compile(query, Regexp::IGNORECASE) =~ content)
       return 1
     end
   end
@@ -180,7 +180,7 @@ HTML
 
     if(search_res(current_gid,query,content,host_name,ip_addr) == 1)
       if query && query !~ /^(host_name|ip_addr)=/
-        content.gsub!(Regexp.compile(query), '<strong>\0</strong>')
+        content.gsub!(Regexp.compile(query, Regexp::IGNORECASE), '<strong>\0</strong>')
       end
       posts << "<div id=\"post#{i + 1}\" class=\"post\">"\
             +   '<div class="header">'\
