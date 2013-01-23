@@ -47,22 +47,22 @@ def check_group(c_ip_addr,ip_addr)
   end
 end
 
-def search_res(gid_query,key_url,content,host_name,ip_addr)
+def search_res(gid,key_url,content,host_name,ip_addr)
   flag_gid = ip_addr[ip_addr.size-2,ip_addr.size].to_i % NUM_GROUPS
   unless key_url.nil? || key_url.empty?
     flag_key = fit_res(key_url,content,host_name,ip_addr)
   else
-    if gid_query.to_i == 0
+    if gid == 0
       return 1
-    elsif flag_gid.to_i == gid_query.to_i-1
+    elsif flag_gid.to_i == gid-1
       return 1
     end
   end
 
   if flag_key == 1
-    if gid_query.to_i == 0
+    if gid == 0
       return 1
-    elsif flag_gid.to_i == gid_query.to_i-1
+    elsif flag_gid.to_i == gid-1
       return 1
     end
   end
@@ -98,9 +98,9 @@ trap("INT") { server.shutdown }
 #教員用
 server.mount_proc('/admin') {|req, res|
   unless req.query["group_id"].nil? || req.query["group_id"].empty?
-    gid_query = req.query["group_id"]
+    current_gid = req.query["group_id"].to_i
   else
-    gid_query = 0
+    current_gid = 0
   end
   unless req.query["key"].nil? || req.query["key"].empty?
     key_url = req.query["key"].force_encoding("UTF-8")
@@ -134,7 +134,7 @@ server.mount_proc('/admin') {|req, res|
 HTML
   radio = []
   for num in 0..NUM_GROUPS do
-    if gid_query.to_i == num
+    if num == current_gid
       if num.to_i == 0
         radio << "<label><input type=\"radio\" name=\"group_num\" value=#{num} checked>all</label>"
       else
@@ -180,7 +180,7 @@ HTML
     host_name = read_file_if_exist("./host_name/#{post_id}")
     content = show_spaces(escape(make_links(IO.read("./content/#{post_id}"))))
     
-    if(search_res(gid_query,key_url,content,host_name,ip_addr) == 1)
+    if(search_res(current_gid,key_url,content,host_name,ip_addr) == 1)
       posts << '<div class="post">'\
             +   '<div class="header">'\
             +     "<span class=\"number\">#{i + 1}</span>"\
