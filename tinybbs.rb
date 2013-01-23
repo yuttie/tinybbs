@@ -76,18 +76,11 @@ def search_res(gid,query,content,host_name,ip_addr)
 end
 
 def fit_res(query,content,host_name,ip_addr)
-  if(query =~ /^host=/)
-    if(Regexp.compile(query.sub("host=", ""), Regexp::IGNORECASE) =~ host_name)
-      return 1
-    end
-  elsif(query =~ /^ip=/)
-    if(Regexp.compile(query.sub("ip=", ""), Regexp::IGNORECASE) =~ ip_addr)
-      return 1
-    end
+  combined = "ip=#{ip_addr}\nhost=#{host_name}\nc=#{content}"
+  if(Regexp.compile(query, Regexp::IGNORECASE) =~ combined)
+    return 1
   else
-    if(Regexp.compile(query, Regexp::IGNORECASE) =~ content)
-      return 1
-    end
+    return 0
   end
 end
 
