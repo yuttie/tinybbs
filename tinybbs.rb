@@ -58,6 +58,7 @@ class Post
   end
 
   def to_html(id_base = 'post')
+    escaped_content = make_res_anchors(make_links(show_spaces(escape(@content))), id_base)
     <<-HTML
     <div id="#{id_base}#{@num}" class="post">
       <div class="header">
@@ -69,7 +70,7 @@ class Post
            <span class="ip-addr">(#{@ip_addr})</span>
         </span>
       </div>
-      <div class="content">#{make_res_anchors(make_links(show_spaces(escape(@content))), id_base)}</div>
+      <div class="content">#{escaped_content}</div>
     </div>
     HTML
   end
