@@ -107,44 +107,6 @@ def query_matches(query, post)
   end
 end
 
-def check_group(c_ip_addr,ip_addr)
-  str_cip = c_ip_addr[c_ip_addr.size-2,c_ip_addr.size]
-  str_ip = ip_addr[ip_addr.size-2,ip_addr.size]
-  if(str_cip.to_i % NUM_GROUPS == str_ip.to_i % NUM_GROUPS)
-    1
-  end
-end
-
-def search_res(gid,query,content,host_name,ip_addr)
-  flag_gid = ip_addr[ip_addr.size-2,ip_addr.size].to_i % NUM_GROUPS
-  unless query.nil? || query.empty?
-    flag_query = fit_res(query,content,host_name,ip_addr)
-  else
-    if gid == nil
-      return 1
-    elsif flag_gid.to_i == gid-1
-      return 1
-    end
-  end
-
-  if flag_query == 1
-    if gid == nil
-      return 1
-    elsif flag_gid.to_i == gid-1
-      return 1
-    end
-  end
-end
-
-def fit_res(query,content,host_name,ip_addr)
-  combined = "ip=#{ip_addr}\nhost=#{host_name}\nc=#{content}"
-  if(Regexp.compile(query, Regexp::IGNORECASE) =~ combined)
-    return 1
-  else
-    return 0
-  end
-end
-
 mkdir_if_not_exist('./content')
 mkdir_if_not_exist('./ip_addr')
 mkdir_if_not_exist('./host_name')
