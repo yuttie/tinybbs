@@ -120,16 +120,9 @@ trap("INT") { server.shutdown }
 
 #教員用
 server.mount_proc('/admin') {|req, res|
-  unless req.query["group"].nil? || req.query["group"].empty?
-    current_gid = req.query["group"].to_i
-  else
-    current_gid = nil
-  end
-  unless req.query["q"].nil? || req.query["q"].empty?
-    query = req.query["q"].force_encoding("UTF-8")
-  else
-    query = nil
-  end
+  current_gid = req.query["group"].to_s.empty? ? nil : req.query["group"].to_i
+  query = req.query["q"].to_s.empty? ? nil : req.query["q"].force_encoding("UTF-8")
+
   selected_posts = load_posts().select {|post|
     in_group(post, current_gid) && query_matches(query, post)
   }
