@@ -107,6 +107,41 @@ def query_matches(query, post)
   end
 end
 
+def make_control_panel_html(gid, query)
+  radio = []
+  if gid == nil
+    radio << '<label><input type="radio" name="group" value="" checked>All</label>'
+  else
+    radio << '<label><input type="radio" name="group" value="">All</label>'
+  end
+  for num in 1..NUM_GROUPS do
+    if num == gid
+      radio << "<label><input type=\"radio\" name=\"group\" value=#{num} checked>#{num}</label>"
+    else
+      radio << "<label><input type=\"radio\" name=\"group\" value=#{num}>#{num}</label>"
+    end
+  end
+  <<-HTML
+      <form method="GET" class="radio_form" action="/admin">
+        <div>
+          <label>Group:</label>
+          <div id="radio_button">
+#{radio.join}
+          </div>
+        </div>
+        <div>
+          <label for="query-box">Regexp Query:</label>
+          <div>
+            <input id="query-box" type="text" name="q" value="#{query}">
+          </div>
+        </div>
+        <div class="form-toolbar">
+          <button type="submit">更新</button>
+        </div>
+      </form>
+  HTML
+end
+
 mkdir_if_not_exist('./content')
 mkdir_if_not_exist('./ip_addr')
 mkdir_if_not_exist('./host_name')
@@ -139,30 +174,7 @@ server.mount_proc('/admin') {|req, res|
   <body>
     <h1>Tiny BBS</h1>
     <div id="form-container-admin">
-      <form method="GET" class="radio_form" action="/admin">
-HTML
-  radio = []
-  if current_gid == nil
-    radio << '<label><input type="radio" name="group" value="" checked>All</label>'
-  else
-    radio << '<label><input type="radio" name="group" value="">All</label>'
-  end
-  for num in 1..NUM_GROUPS do
-    if num == current_gid
-      radio << "<label><input type=\"radio\" name=\"group\" value=#{num} checked>#{num}</label>"
-    else
-      radio << "<label><input type=\"radio\" name=\"group\" value=#{num}>#{num}</label>"
-    end
-  end
-  res.body += '<div><label>Group:</label>' + '<div id="radio_button">' + radio.join + '</div></div>'
-
-  res.body += "<div><label for=\"query-box\">Regexp Query:</label><div><input id=\"query-box\" type=\"text\" name=\"q\" value=#{query || ""}></div></div>"
-
-  res.body += <<HTML
-        <div class="form-toolbar">
-          <button type="submit">更新</button>
-        </div>
-      </form>
+#{make_control_panel(query)}
       <form method="POST" class="text_form" action="/admin/post">
         <div>
           <textarea name="content" rows="5" autofocus required></textarea>
