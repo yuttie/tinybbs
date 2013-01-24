@@ -175,7 +175,7 @@ server.mount_proc('/admin') {|req, res|
   <body>
     <h1>Tiny BBS</h1>
     <div id="form-container-admin">
-#{make_control_panel(query)}
+#{make_control_panel(current_gid, query)}
       <form method="POST" class="text_form" action="/admin/post">
         <div>
           <textarea name="content" rows="5" autofocus required></textarea>
