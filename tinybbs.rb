@@ -46,6 +46,67 @@ def show_spaces(string)
   str
 end
 
+class Post
+  attr_accessor :num, :time, :ip_addr, :host_name, :content
+
+  def initialize(num, time, ip_addr, host_name, content)
+    @num = num
+    @time = time
+    @ip_addr = ip_addr
+    @host_name = host_name
+    @content = content
+  end
+
+  def to_html(id_base = 'post')
+    <<-HTML
+    <div id="#{id_base}#{@num}" class="post">
+      <div class="header">
+        <span class="number">#{@num}</span>
+        <span class="time">#{@time.strftime('%Y/%m/%d %H:%M:%S')}</span>
+        <span class="host">
+           <span class="host-name">#{@host_name}</span>
+           &nbsp;
+           <span class="ip-addr">(#{@ip_addr})</span>
+        </span>
+      </div>
+      <div class="content">#{make_res_anchors(make_links(show_spaces(escape(@content))), id_base)}</div>
+    </div>
+    HTML
+  end
+end
+
+def load_posts()
+  Dir.glob('./content/*').sort.map.with_index {|fp, i|
+    post_id = File.basename(fp)
+    time = Time.at(post_id[0...-6].to_i, post_id[-6..-1].to_i)
+    ip_addr = read_file_if_exist("./ip_addr/#{post_id}")
+    host_name = read_file_if_exist("./host_name/#{post_id}")
+    content = IO.read("./content/#{post_id}")
+    Post.new(i + 1, time, ip_addr, host_name, content)
+  }
+end
+
+def addr_to_group_id(ip_addr)
+  (ip_addr.split('.').last.to_i % 100) % NUM_GROUPS + 1
+end
+
+def in_group(post, gid)
+  if gid
+    addr_to_group_id(post.ip_addr) == gid
+  else
+    true
+  end
+end
+
+def query_matches(query, post)
+  if query
+    combined = "ip=#{post.ip_addr}\nhost=#{post.host_name}\nc=#{post.content}"
+    Regexp.compile(query, Regexp::IGNORECASE) =~ combined
+  else
+    true
+  end
+end
+
 def check_group(c_ip_addr,ip_addr)
   str_cip = c_ip_addr[c_ip_addr.size-2,c_ip_addr.size]
   str_ip = ip_addr[ip_addr.size-2,ip_addr.size]
