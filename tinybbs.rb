@@ -76,6 +76,32 @@ class Post
   end
 end
 
+class MatchedPost < Post
+  def initialize(post, query_str)
+    super(post.num, post.time, post.ip_addr, post.host_name, post.content)
+    @query = query_str && Regexp.compile(query_str, Regexp::IGNORECASE)
+  end
+
+  def to_html(id_base = 'post')
+    escaped_content = make_res_anchors(make_links(show_spaces(escape(@content))), id_base)
+    escaped_content.gsub!(@query, '<strong>\0</strong>') if @query
+    <<-HTML
+    <div id="#{id_base}#{@num}" class="post">
+      <div class="header">
+        <span class="number">#{@num}</span>
+        <span class="time">#{@time.strftime('%Y/%m/%d %H:%M:%S')}</span>
+        <span class="host">
+           <span class="host-name">#{@host_name}</span>
+           &nbsp;
+           <span class="ip-addr">(#{@ip_addr})</span>
+        </span>
+      </div>
+      <div class="content">#{escaped_content}</div>
+    </div>
+    HTML
+  end
+end
+
 def load_posts()
   Dir.glob('./content/*').sort.map.with_index {|fp, i|
     post_id = File.basename(fp)
@@ -161,7 +187,7 @@ server.mount_proc('/admin') {|req, res|
 
   selected_posts = load_posts().select {|post|
     in_group(post, current_gid) && query_matches(query, post)
-  }
+  }.map {|post| MatchedPost.new(post, query) }
 
   res.content_type = 'text/html'
   res.body = <<HTML
