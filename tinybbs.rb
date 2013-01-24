@@ -108,7 +108,7 @@ def query_matches(query, post)
   end
 end
 
-def make_control_panel_html(gid, query)
+def make_control_form(gid, query)
   radio = []
   if gid == nil
     radio << '<label><input type="radio" name="group" value="" checked>All</label>'
@@ -175,7 +175,7 @@ server.mount_proc('/admin') {|req, res|
   <body>
     <h1>Tiny BBS</h1>
     <div id="form-container-admin">
-#{make_control_panel(current_gid, query)}
+#{make_control_form(current_gid, query)}
       <form method="POST" class="text_form" action="/admin/post">
         <div>
           <textarea name="content" rows="5" autofocus required></textarea>
