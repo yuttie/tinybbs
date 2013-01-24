@@ -168,6 +168,9 @@ server.mount_proc('/admin') {|req, res|
   else
     query = nil
   end
+  selected_posts = load_posts().select {|post|
+    in_group(post, current_gid) && query_matches(query, post)
+  }
 
   res.content_type = 'text/html'
   res.body = <<HTML
@@ -221,37 +224,7 @@ HTML
           <h3>投稿</h3>
         </div>
         <div class="view">
-HTML
-  posts = []
-  Dir.glob('./content/*').sort.each_with_index {|fp, i|
-    host_name, ip_addr = req.peeraddr.values_at(2, 3)
-    time = Time.now
-    post_id = File.basename(fp)
-    time = Time.at(post_id[0...-6].to_i, post_id[-6..-1].to_i)
-    ip_addr = read_file_if_exist("./ip_addr/#{post_id}")
-    host_name = read_file_if_exist("./host_name/#{post_id}")
-    content = make_res_anchors(make_links(show_spaces(escape(IO.read("./content/#{post_id}")))))
-
-    if(search_res(current_gid,query,content,host_name,ip_addr) == 1)
-      if query && query !~ /^(host_name|ip_addr)=/
-        content.gsub!(Regexp.compile(query, Regexp::IGNORECASE), '<strong>\0</strong>')
-      end
-      posts << "<div id=\"post#{i + 1}\" class=\"post\">"\
-            +   '<div class="header">'\
-            +     "<span class=\"number\">#{i + 1}</span>"\
-            +     "<span class=\"time\">#{time.strftime('%Y/%m/%d %H:%M:%S')}</span>"\
-            +     '<span class="host">'\
-            +        "<span class=\"host-name\">#{host_name}</span>"\
-            +        '&nbsp;'\
-            +        "<span class=\"ip-addr\">(#{ip_addr})</span>"\
-            +     '</span>'\
-            +   '</div>'\
-            +   "<div class=\"content\">#{content}</div>"\
-            + '</div>'
-    end
-  }
-  res.body += posts.reverse.join
-  res.body += <<HTML
+#{selected_posts.reverse.map {|post| post.to_html }.join}
         </div>
       </div>
     </div>
@@ -274,6 +247,12 @@ server.mount_proc('/admin/post') {|req, res|
 
 #学生用
 server.mount_proc('/bbs') {|req, res|
+  ip_addr = req.peeraddr[3]
+  gid = addr_to_group_id(ip_addr)
+
+  posts = load_posts()
+  group_posts = posts.select {|post| in_group(post, gid) }
+
   res.content_type = 'text/html'
   res.body = <<HTML
 <!DOCTYPE html>
@@ -299,49 +278,7 @@ server.mount_proc('/bbs') {|req, res|
           <h3>グループ内投稿</h3>
         </div>
         <div class="view">
-HTML
-  all_posts = []
-  posts = []
-  Dir.glob('./content/*').sort.each_with_index {|fp, i|
-    c_host_name, c_ip_addr = req.peeraddr.values_at(2, 3)
-
-    #c_ip_addr = "133.5.104.162"
-    post_id = File.basename(fp)
-    time = Time.at(post_id[0...-6].to_i, post_id[-6..-1].to_i)
-    ip_addr = read_file_if_exist("./ip_addr/#{post_id}")
-    host_name = read_file_if_exist("./host_name/#{post_id}")
-    content = make_res_anchors(make_links(show_spaces(escape(IO.read("./content/#{post_id}")))), "apost")
-
-    all_posts << "<div id=\"apost#{i + 1}\" class=\"post\">"\
-          +   '<div class="header">'\
-          +     "<span class=\"number\">#{i + 1}</span>"\
-          +     "<span class=\"time\">#{time.strftime('%Y/%m/%d %H:%M:%S')}</span>"\
-          +     '<span class="host">'\
-          +        "<span class=\"host-name\">#{host_name}</span>"\
-          +        '&nbsp;'\
-          +        "<span class=\"ip-addr\">(#{ip_addr})</span>"\
-          +     '</span>'\
-          +   '</div>'\
-          +   "<div class=\"content\">#{content}</div>"\
-          + '</div>'
-    if(check_group(c_ip_addr,ip_addr) == 1 )
-      content = make_res_anchors(make_links(show_spaces(escape(IO.read("./content/#{post_id}")))))
-      posts << "<div id=\"post#{i + 1}\" class=\"post\">"\
-            +   '<div class="header">'\
-            +     "<span class=\"number\">#{i + 1}</span>"\
-            +     "<span class=\"time\">#{time.strftime('%Y/%m/%d %H:%M:%S')}</span>"\
-            +     '<span class="host">'\
-            +        "<span class=\"host-name\">#{host_name}</span>"\
-            +        '&nbsp;'\
-            +        "<span class=\"ip-addr\">(#{ip_addr})</span>"\
-            +     '</span>'\
-            +   '</div>'\
-            +   "<div class=\"content\">#{content}</div>"\
-            + '</div>'
-    end
-  }
-  res.body += posts.reverse.join
-  res.body += <<HTML
+#{group_posts.reverse.map {|post| post.to_html }.join}
         </div>
       </div>
 
@@ -350,12 +287,10 @@ HTML
           <h3>全体投稿</h3>
         </div>
         <div class="view">
-HTML
-  res.body += all_posts.reverse.join
-  res.body += <<HTML
+#{posts.reverse.map {|post| post.to_html("apost") }.join}
+        </div>
       </div>
     </div>
-  </div>
   </body>
 </html>
 HTML
