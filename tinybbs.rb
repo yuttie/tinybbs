@@ -53,50 +53,53 @@ class FsDB
   end
 end
 
-def make_links(str)
-  str.gsub(URI.regexp, '<a href="\&">\&</a>')
-end
+module BBS
+  def make_links(str)
+    str.gsub(URI.regexp, '<a href="\&">\&</a>')
+  end
 
-def make_res_anchors(str, id_base = "post")
-  str.gsub(/(&gt;|＞){1,2}([0-9０-９]+)/) {
-    post_id = id_base + $2.tr('０-９', '0-9')
-    "<a href=\"##{post_id}\">#{$&}</a>"
-  }
-end
+  def make_res_anchors(str, id_base = "post")
+    str.gsub(/(&gt;|＞){1,2}([0-9０-９]+)/) {
+      post_id = id_base + $2.tr('０-９', '0-9')
+      "<a href=\"##{post_id}\">#{$&}</a>"
+    }
+  end
 
-def escape(string)
-  str = string ? string.dup : ""
-  str.gsub!(/&/,  '&amp;')
-  str.gsub!(/\"/, '&quot;')
-  str.gsub!(/>/,  '&gt;')
-  str.gsub!(/</,  '&lt;')
-  str
-end
+  def escape(string)
+    str = string ? string.dup : ""
+    str.gsub!(/&/,  '&amp;')
+    str.gsub!(/\"/, '&quot;')
+    str.gsub!(/>/,  '&gt;')
+    str.gsub!(/</,  '&lt;')
+    str
+  end
 
-def show_spaces(string)
-  str = string ? string.dup : ""
-  str.gsub!(/ /,  '&nbsp;')
-  str.gsub!(/\n/, '<br>')
-  str
-end
+  def show_spaces(string)
+    str = string ? string.dup : ""
+    str.gsub!(/ /,  '&nbsp;')
+    str.gsub!(/\n/, '<br>')
+    str
+  end
 
-def to_html(post, query = nil, id_base = 'post')
-  escaped_content = make_res_anchors(make_links(show_spaces(escape(post.content))), id_base)
-  escaped_content.gsub!(query, '<strong>\0</strong>') if query
-  <<-HTML
-  <div id="#{id_base}#{post.num}" class="post">
-    <div class="header">
-      <span class="number">#{post.num}</span>
-      <span class="time">#{post.time.strftime('%Y/%m/%d %H:%M:%S')}</span>
-      <span class="host">
-         <span class="host-name">#{post.host_name}</span>
-         &nbsp;
-         <span class="ip-addr">(#{post.ip_addr})</span>
-      </span>
+  module_function
+  def to_html(post, query = nil, id_base = 'post')
+    escaped_content = make_res_anchors(make_links(show_spaces(escape(post.content))), id_base)
+    escaped_content.gsub!(query, '<strong>\0</strong>') if query
+    <<-HTML
+    <div id="#{id_base}#{post.num}" class="post">
+      <div class="header">
+        <span class="number">#{post.num}</span>
+        <span class="time">#{post.time.strftime('%Y/%m/%d %H:%M:%S')}</span>
+        <span class="host">
+           <span class="host-name">#{post.host_name}</span>
+           &nbsp;
+           <span class="ip-addr">(#{post.ip_addr})</span>
+        </span>
+      </div>
+      <div class="content">#{escaped_content}</div>
     </div>
-    <div class="content">#{escaped_content}</div>
-  </div>
-  HTML
+    HTML
+  end
 end
 
 def addr_to_group_id(ip_addr)
@@ -202,7 +205,7 @@ server.mount_proc('/admin') {|req, res|
           <h3>投稿</h3>
         </div>
         <div class="view">
-#{selected_posts.reverse.map {|post| to_html(post, query) }.join}
+#{selected_posts.reverse.map {|post| BBS.to_html(post, query) }.join}
         </div>
       </div>
     </div>
@@ -256,7 +259,7 @@ server.mount_proc('/bbs') {|req, res|
           <h3>グループ内投稿</h3>
         </div>
         <div class="view">
-#{group_posts.reverse.map {|post| to_html(post) }.join}
+#{group_posts.reverse.map {|post| BBS.to_html(post) }.join}
         </div>
       </div>
 
@@ -265,7 +268,7 @@ server.mount_proc('/bbs') {|req, res|
           <h3>全体投稿</h3>
         </div>
         <div class="view">
-#{posts.reverse.map {|post| to_html(post, nil, 'apost') }.join}
+#{posts.reverse.map {|post| BBS.to_html(post, nil, 'apost') }.join}
         </div>
       </div>
     </div>
