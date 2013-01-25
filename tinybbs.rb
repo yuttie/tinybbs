@@ -10,6 +10,18 @@ require 'uri'
 
 NUM_GROUPS = 21
 
+class Post
+  attr_accessor :num, :time, :ip_addr, :host_name, :content
+
+  def initialize(num, time, ip_addr, host_name, content)
+    @num = num
+    @time = time
+    @ip_addr = ip_addr
+    @host_name = host_name
+    @content = content
+  end
+end
+
 class FsDB
   def initialize(db_dir)
     @db_dir = db_dir
@@ -68,60 +80,23 @@ def show_spaces(string)
   str
 end
 
-class Post
-  attr_accessor :num, :time, :ip_addr, :host_name, :content
-
-  def initialize(num, time, ip_addr, host_name, content)
-    @num = num
-    @time = time
-    @ip_addr = ip_addr
-    @host_name = host_name
-    @content = content
-  end
-
-  def to_html(id_base = 'post')
-    escaped_content = make_res_anchors(make_links(show_spaces(escape(@content))), id_base)
-    <<-HTML
-    <div id="#{id_base}#{@num}" class="post">
-      <div class="header">
-        <span class="number">#{@num}</span>
-        <span class="time">#{@time.strftime('%Y/%m/%d %H:%M:%S')}</span>
-        <span class="host">
-           <span class="host-name">#{@host_name}</span>
-           &nbsp;
-           <span class="ip-addr">(#{@ip_addr})</span>
-        </span>
-      </div>
-      <div class="content">#{escaped_content}</div>
+def to_html(post, query = nil, id_base = 'post')
+  escaped_content = make_res_anchors(make_links(show_spaces(escape(post.content))), id_base)
+  escaped_content.gsub!(query, '<strong>\0</strong>') if query
+  <<-HTML
+  <div id="#{id_base}#{post.num}" class="post">
+    <div class="header">
+      <span class="number">#{post.num}</span>
+      <span class="time">#{post.time.strftime('%Y/%m/%d %H:%M:%S')}</span>
+      <span class="host">
+         <span class="host-name">#{post.host_name}</span>
+         &nbsp;
+         <span class="ip-addr">(#{post.ip_addr})</span>
+      </span>
     </div>
-    HTML
-  end
-end
-
-class MatchedPost < Post
-  def initialize(post, query_str)
-    super(post.num, post.time, post.ip_addr, post.host_name, post.content)
-    @query = query_str && Regexp.compile(query_str, Regexp::IGNORECASE)
-  end
-
-  def to_html(id_base = 'post')
-    escaped_content = make_res_anchors(make_links(show_spaces(escape(@content))), id_base)
-    escaped_content.gsub!(@query, '<strong>\0</strong>') if @query
-    <<-HTML
-    <div id="#{id_base}#{@num}" class="post">
-      <div class="header">
-        <span class="number">#{@num}</span>
-        <span class="time">#{@time.strftime('%Y/%m/%d %H:%M:%S')}</span>
-        <span class="host">
-           <span class="host-name">#{@host_name}</span>
-           &nbsp;
-           <span class="ip-addr">(#{@ip_addr})</span>
-        </span>
-      </div>
-      <div class="content">#{escaped_content}</div>
-    </div>
-    HTML
-  end
+    <div class="content">#{escaped_content}</div>
+  </div>
+  HTML
 end
 
 def addr_to_group_id(ip_addr)
@@ -196,7 +171,7 @@ server.mount_proc('/admin') {|req, res|
 
   selected_posts = db.posts.select {|post|
     in_group(post, current_gid) && query_matches(query, post)
-  }.map {|post| MatchedPost.new(post, query) }
+  }
 
   res.content_type = 'text/html'
   res.body = <<HTML
@@ -227,7 +202,7 @@ server.mount_proc('/admin') {|req, res|
           <h3>投稿</h3>
         </div>
         <div class="view">
-#{selected_posts.reverse.map {|post| post.to_html }.join}
+#{selected_posts.reverse.map {|post| to_html(post, query) }.join}
         </div>
       </div>
     </div>
@@ -281,7 +256,7 @@ server.mount_proc('/bbs') {|req, res|
           <h3>グループ内投稿</h3>
         </div>
         <div class="view">
-#{group_posts.reverse.map {|post| post.to_html }.join}
+#{group_posts.reverse.map {|post| to_html(post) }.join}
         </div>
       </div>
 
@@ -290,7 +265,7 @@ server.mount_proc('/bbs') {|req, res|
           <h3>全体投稿</h3>
         </div>
         <div class="view">
-#{posts.reverse.map {|post| post.to_html("apost") }.join}
+#{posts.reverse.map {|post| to_html(post, nil, 'apost') }.join}
         </div>
       </div>
     </div>
