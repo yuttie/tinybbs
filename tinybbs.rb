@@ -10,13 +10,35 @@ require 'uri'
 
 NUM_GROUPS = 21
 
-def mkdir_if_not_exist(dp)
-  Dir.mkdir(dp) unless Dir.exist?(dp)
-  raise "Couldn't make a directory '#{dp}'." unless Dir.exist?(dp)
-end
+class FsDB
+  def initialize(db_dir)
+    @db_dir = db_dir
+    mkdir_if_not_exist("#{@db_dir}/content")
+    mkdir_if_not_exist("#{@db_dir}/ip_addr")
+    mkdir_if_not_exist("#{@db_dir}/host_name")
+  end
 
-def read_file_if_exist(fp)
-  File.exist?(fp) ? IO.read(fp) : ''
+  def posts
+    Dir.glob("#{@db_dir}/content/*").sort.map.with_index {|fp, i|
+      post_id = File.basename(fp)
+      time = Time.at(post_id[0...-6].to_i, post_id[-6..-1].to_i)
+      ip_addr = read_file_if_exist("#{@db_dir}/ip_addr/#{post_id}")
+      host_name = read_file_if_exist("#{@db_dir}/host_name/#{post_id}")
+      content = IO.read("#{@db_dir}/content/#{post_id}")
+
+      Post.new(i + 1, time, ip_addr, host_name, content)
+    }
+  end
+
+  private
+  def mkdir_if_not_exist(dp)
+    Dir.mkdir(dp) unless Dir.exist?(dp)
+    raise "Couldn't make a directory '#{dp}'." unless Dir.exist?(dp)
+  end
+
+  def read_file_if_exist(fp)
+    File.exist?(fp) ? IO.read(fp) : ''
+  end
 end
 
 def make_links(str)
@@ -102,17 +124,6 @@ class MatchedPost < Post
   end
 end
 
-def load_posts()
-  Dir.glob('./content/*').sort.map.with_index {|fp, i|
-    post_id = File.basename(fp)
-    time = Time.at(post_id[0...-6].to_i, post_id[-6..-1].to_i)
-    ip_addr = read_file_if_exist("./ip_addr/#{post_id}")
-    host_name = read_file_if_exist("./host_name/#{post_id}")
-    content = IO.read("./content/#{post_id}")
-    Post.new(i + 1, time, ip_addr, host_name, content)
-  }
-end
-
 def addr_to_group_id(ip_addr)
   (ip_addr.split('.').last.to_i % 100) % NUM_GROUPS + 1
 end
@@ -169,9 +180,7 @@ def make_control_form(gid, query)
   HTML
 end
 
-mkdir_if_not_exist('./content')
-mkdir_if_not_exist('./ip_addr')
-mkdir_if_not_exist('./host_name')
+db = FsDB.new('.')
 
 server = WEBrick::HTTPServer.new({
   :DocumentRoot => './public',
@@ -185,7 +194,7 @@ server.mount_proc('/admin') {|req, res|
   current_gid = req.query["group"].to_s.empty? ? nil : req.query["group"].to_i
   query = req.query["q"].to_s.empty? ? nil : req.query["q"].force_encoding("UTF-8")
 
-  selected_posts = load_posts().select {|post|
+  selected_posts = db.posts.select {|post|
     in_group(post, current_gid) && query_matches(query, post)
   }.map {|post| MatchedPost.new(post, query) }
 
@@ -244,7 +253,7 @@ server.mount_proc('/bbs') {|req, res|
   ip_addr = req.peeraddr[3]
   gid = addr_to_group_id(ip_addr)
 
-  posts = load_posts()
+  posts = db.posts
   group_posts = posts.select {|post| in_group(post, gid) }
 
   res.content_type = 'text/html'
