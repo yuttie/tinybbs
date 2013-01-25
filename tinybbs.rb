@@ -10,83 +10,155 @@ require 'uri'
 
 NUM_GROUPS = 21
 
-def mkdir_if_not_exist(dp)
-  Dir.mkdir(dp) unless Dir.exist?(dp)
-  raise "Couldn't make a directory '#{dp}'." unless Dir.exist?(dp)
-end
+class Post
+  attr_accessor :num, :time, :ip_addr, :host_name, :content
 
-def read_file_if_exist(fp)
-  File.exist?(fp) ? IO.read(fp) : ''
-end
-
-def make_links(str)
-  str.gsub(URI.regexp, '<a href="\&">\&</a>')
-end
-
-def make_res_anchors(str, id_base = "post")
-  str.gsub(/(&gt;|＞){1,2}([0-9０-９]+)/) {
-    post_id = id_base + $2.tr('０-９', '0-9')
-    "<a href=\"##{post_id}\">#{$&}</a>"
-  }
-end
-
-def escape(string)
-  str = string ? string.dup : ""
-  str.gsub!(/&/,  '&amp;')
-  str.gsub!(/\"/, '&quot;')
-  str.gsub!(/>/,  '&gt;')
-  str.gsub!(/</,  '&lt;')
-  str
-end
-
-def show_spaces(string)
-  str = string ? string.dup : ""
-  str.gsub!(/ /,  '&nbsp;')
-  str.gsub!(/\n/, '<br>')
-  str
-end
-
-def check_group(c_ip_addr,ip_addr)
-  str_cip = c_ip_addr[c_ip_addr.size-2,c_ip_addr.size]
-  str_ip = ip_addr[ip_addr.size-2,ip_addr.size]
-  if(str_cip.to_i % NUM_GROUPS == str_ip.to_i % NUM_GROUPS)
-    1
+  def initialize(num, time, ip_addr, host_name, content)
+    @num = num
+    @time = time
+    @ip_addr = ip_addr
+    @host_name = host_name
+    @content = content
   end
 end
 
-def search_res(gid,query,content,host_name,ip_addr)
-  flag_gid = ip_addr[ip_addr.size-2,ip_addr.size].to_i % NUM_GROUPS
-  unless query.nil? || query.empty?
-    flag_query = fit_res(query,content,host_name,ip_addr)
+class FsDB
+  def initialize(db_dir)
+    @db_dir = db_dir
+    mkdir_if_not_exist("#{@db_dir}/content")
+    mkdir_if_not_exist("#{@db_dir}/ip_addr")
+    mkdir_if_not_exist("#{@db_dir}/host_name")
+  end
+
+  def posts
+    Dir.glob("#{@db_dir}/content/*").sort.map.with_index {|fp, i|
+      post_id = File.basename(fp)
+      time = Time.at(post_id[0...-6].to_i, post_id[-6..-1].to_i)
+      ip_addr = read_file_if_exist("#{@db_dir}/ip_addr/#{post_id}")
+      host_name = read_file_if_exist("#{@db_dir}/host_name/#{post_id}")
+      content = IO.read("#{@db_dir}/content/#{post_id}")
+
+      Post.new(i + 1, time, ip_addr, host_name, content)
+    }
+  end
+
+  private
+  def mkdir_if_not_exist(dp)
+    Dir.mkdir(dp) unless Dir.exist?(dp)
+    raise "Couldn't make a directory '#{dp}'." unless Dir.exist?(dp)
+  end
+
+  def read_file_if_exist(fp)
+    File.exist?(fp) ? IO.read(fp) : ''
+  end
+end
+
+module BBS
+  def make_links(str)
+    str.gsub(URI.regexp, '<a href="\&">\&</a>')
+  end
+
+  def make_res_anchors(str, id_base = "post")
+    str.gsub(/(&gt;|＞){1,2}([0-9０-９]+)/) {
+      post_id = id_base + $2.tr('０-９', '0-9')
+      "<a href=\"##{post_id}\">#{$&}</a>"
+    }
+  end
+
+  def escape(string)
+    str = string ? string.dup : ""
+    str.gsub!(/&/,  '&amp;')
+    str.gsub!(/\"/, '&quot;')
+    str.gsub!(/>/,  '&gt;')
+    str.gsub!(/</,  '&lt;')
+    str
+  end
+
+  def show_spaces(string)
+    str = string ? string.dup : ""
+    str.gsub!(/ /,  '&nbsp;')
+    str.gsub!(/\n/, '<br>')
+    str
+  end
+
+  module_function
+  def to_html(post, query = nil, id_base = 'post')
+    escaped_content = make_res_anchors(make_links(show_spaces(escape(post.content))), id_base)
+    escaped_content.gsub!(query, '<strong>\0</strong>') if query
+    <<-HTML
+    <div id="#{id_base}#{post.num}" class="post">
+      <div class="header">
+        <span class="number">#{post.num}</span>
+        <span class="time">#{post.time.strftime('%Y/%m/%d %H:%M:%S')}</span>
+        <span class="host">
+           <span class="host-name">#{post.host_name}</span>
+           &nbsp;
+           <span class="ip-addr">(#{post.ip_addr})</span>
+        </span>
+      </div>
+      <div class="content">#{escaped_content}</div>
+    </div>
+    HTML
+  end
+end
+
+def addr_to_group_id(ip_addr)
+  (ip_addr.split('.').last.to_i % 100) % NUM_GROUPS + 1
+end
+
+def in_group(post, gid)
+  if gid
+    addr_to_group_id(post.ip_addr) == gid
   else
-    if gid == nil
-      return 1
-    elsif flag_gid.to_i == gid-1
-      return 1
+    true
+  end
+end
+
+def query_matches(query, post)
+  if query
+    combined = "ip=#{post.ip_addr}\nhost=#{post.host_name}\nc=#{post.content}"
+    Regexp.compile(query, Regexp::IGNORECASE) =~ combined
+  else
+    true
+  end
+end
+
+def make_control_form(gid, query)
+  radio = []
+  if gid == nil
+    radio << '<label><input type="radio" name="group" value="" checked>All</label>'
+  else
+    radio << '<label><input type="radio" name="group" value="">All</label>'
+  end
+  for num in 1..NUM_GROUPS do
+    if num == gid
+      radio << "<label><input type=\"radio\" name=\"group\" value=#{num} checked>#{num}</label>"
+    else
+      radio << "<label><input type=\"radio\" name=\"group\" value=#{num}>#{num}</label>"
     end
   end
-
-  if flag_query == 1
-    if gid == nil
-      return 1
-    elsif flag_gid.to_i == gid-1
-      return 1
-    end
-  end
+  <<-HTML
+      <form method="GET" class="radio_form" action="/admin">
+        <div>
+          <label>Group:</label>
+          <div id="radio_button">
+#{radio.join}
+          </div>
+        </div>
+        <div>
+          <label for="query-box">Regexp Query:</label>
+          <div>
+            <input id="query-box" type="text" name="q" value="#{query}">
+          </div>
+        </div>
+        <div class="form-toolbar">
+          <button type="submit">更新</button>
+        </div>
+      </form>
+  HTML
 end
 
-def fit_res(query,content,host_name,ip_addr)
-  combined = "ip=#{ip_addr}\nhost=#{host_name}\nc=#{content}"
-  if(Regexp.compile(query, Regexp::IGNORECASE) =~ combined)
-    return 1
-  else
-    return 0
-  end
-end
-
-mkdir_if_not_exist('./content')
-mkdir_if_not_exist('./ip_addr')
-mkdir_if_not_exist('./host_name')
+db = FsDB.new('.')
 
 server = WEBrick::HTTPServer.new({
   :DocumentRoot => './public',
@@ -97,16 +169,12 @@ trap("INT") { server.shutdown }
 
 #教員用
 server.mount_proc('/admin') {|req, res|
-  unless req.query["group"].nil? || req.query["group"].empty?
-    current_gid = req.query["group"].to_i
-  else
-    current_gid = nil
-  end
-  unless req.query["q"].nil? || req.query["q"].empty?
-    query = req.query["q"].force_encoding("UTF-8")
-  else
-    query = nil
-  end
+  current_gid = req.query["group"].to_s.empty? ? nil : req.query["group"].to_i
+  query = req.query["q"].to_s.empty? ? nil : req.query["q"].force_encoding("UTF-8")
+
+  selected_posts = db.posts.select {|post|
+    in_group(post, current_gid) && query_matches(query, post)
+  }
 
   res.content_type = 'text/html'
   res.body = <<HTML
@@ -120,30 +188,7 @@ server.mount_proc('/admin') {|req, res|
   <body>
     <h1>Tiny BBS</h1>
     <div id="form-container-admin">
-      <form method="GET" class="radio_form" action="/admin">
-HTML
-  radio = []
-  if current_gid == nil
-    radio << '<label><input type="radio" name="group" value="" checked>All</label>'
-  else
-    radio << '<label><input type="radio" name="group" value="">All</label>'
-  end
-  for num in 1..NUM_GROUPS do
-    if num == current_gid
-      radio << "<label><input type=\"radio\" name=\"group\" value=#{num} checked>#{num}</label>"
-    else
-      radio << "<label><input type=\"radio\" name=\"group\" value=#{num}>#{num}</label>"
-    end
-  end
-  res.body += '<div><label>Group:</label>' + '<div id="radio_button">' + radio.join + '</div></div>'
-
-  res.body += "<div><label for=\"query-box\">Regexp Query:</label><div><input id=\"query-box\" type=\"text\" name=\"q\" value=#{query || ""}></div></div>"
-
-  res.body += <<HTML
-        <div class="form-toolbar">
-          <button type="submit">更新</button>
-        </div>
-      </form>
+#{make_control_form(current_gid, query)}
       <form method="POST" class="text_form" action="/admin/post">
         <div>
           <textarea name="content" rows="5" autofocus required></textarea>
@@ -160,37 +205,7 @@ HTML
           <h3>投稿</h3>
         </div>
         <div class="view">
-HTML
-  posts = []
-  Dir.glob('./content/*').sort.each_with_index {|fp, i|
-    host_name, ip_addr = req.peeraddr.values_at(2, 3)
-    time = Time.now
-    post_id = File.basename(fp)
-    time = Time.at(post_id[0...-6].to_i, post_id[-6..-1].to_i)
-    ip_addr = read_file_if_exist("./ip_addr/#{post_id}")
-    host_name = read_file_if_exist("./host_name/#{post_id}")
-    content = make_res_anchors(make_links(show_spaces(escape(IO.read("./content/#{post_id}")))))
-
-    if(search_res(current_gid,query,content,host_name,ip_addr) == 1)
-      if query && query !~ /^(host_name|ip_addr)=/
-        content.gsub!(Regexp.compile(query, Regexp::IGNORECASE), '<strong>\0</strong>')
-      end
-      posts << "<div id=\"post#{i + 1}\" class=\"post\">"\
-            +   '<div class="header">'\
-            +     "<span class=\"number\">#{i + 1}</span>"\
-            +     "<span class=\"time\">#{time.strftime('%Y/%m/%d %H:%M:%S')}</span>"\
-            +     '<span class="host">'\
-            +        "<span class=\"host-name\">#{host_name}</span>"\
-            +        '&nbsp;'\
-            +        "<span class=\"ip-addr\">(#{ip_addr})</span>"\
-            +     '</span>'\
-            +   '</div>'\
-            +   "<div class=\"content\">#{content}</div>"\
-            + '</div>'
-    end
-  }
-  res.body += posts.reverse.join
-  res.body += <<HTML
+#{selected_posts.reverse.map {|post| BBS.to_html(post, query) }.join}
         </div>
       </div>
     </div>
@@ -213,6 +228,12 @@ server.mount_proc('/admin/post') {|req, res|
 
 #学生用
 server.mount_proc('/bbs') {|req, res|
+  ip_addr = req.peeraddr[3]
+  gid = addr_to_group_id(ip_addr)
+
+  posts = db.posts
+  group_posts = posts.select {|post| in_group(post, gid) }
+
   res.content_type = 'text/html'
   res.body = <<HTML
 <!DOCTYPE html>
@@ -238,49 +259,7 @@ server.mount_proc('/bbs') {|req, res|
           <h3>グループ内投稿</h3>
         </div>
         <div class="view">
-HTML
-  all_posts = []
-  posts = []
-  Dir.glob('./content/*').sort.each_with_index {|fp, i|
-    c_host_name, c_ip_addr = req.peeraddr.values_at(2, 3)
-
-    #c_ip_addr = "133.5.104.162"
-    post_id = File.basename(fp)
-    time = Time.at(post_id[0...-6].to_i, post_id[-6..-1].to_i)
-    ip_addr = read_file_if_exist("./ip_addr/#{post_id}")
-    host_name = read_file_if_exist("./host_name/#{post_id}")
-    content = make_res_anchors(make_links(show_spaces(escape(IO.read("./content/#{post_id}")))), "apost")
-
-    all_posts << "<div id=\"apost#{i + 1}\" class=\"post\">"\
-          +   '<div class="header">'\
-          +     "<span class=\"number\">#{i + 1}</span>"\
-          +     "<span class=\"time\">#{time.strftime('%Y/%m/%d %H:%M:%S')}</span>"\
-          +     '<span class="host">'\
-          +        "<span class=\"host-name\">#{host_name}</span>"\
-          +        '&nbsp;'\
-          +        "<span class=\"ip-addr\">(#{ip_addr})</span>"\
-          +     '</span>'\
-          +   '</div>'\
-          +   "<div class=\"content\">#{content}</div>"\
-          + '</div>'
-    if(check_group(c_ip_addr,ip_addr) == 1 )
-      content = make_res_anchors(make_links(show_spaces(escape(IO.read("./content/#{post_id}")))))
-      posts << "<div id=\"post#{i + 1}\" class=\"post\">"\
-            +   '<div class="header">'\
-            +     "<span class=\"number\">#{i + 1}</span>"\
-            +     "<span class=\"time\">#{time.strftime('%Y/%m/%d %H:%M:%S')}</span>"\
-            +     '<span class="host">'\
-            +        "<span class=\"host-name\">#{host_name}</span>"\
-            +        '&nbsp;'\
-            +        "<span class=\"ip-addr\">(#{ip_addr})</span>"\
-            +     '</span>'\
-            +   '</div>'\
-            +   "<div class=\"content\">#{content}</div>"\
-            + '</div>'
-    end
-  }
-  res.body += posts.reverse.join
-  res.body += <<HTML
+#{group_posts.reverse.map {|post| BBS.to_html(post) }.join}
         </div>
       </div>
 
@@ -289,12 +268,10 @@ HTML
           <h3>全体投稿</h3>
         </div>
         <div class="view">
-HTML
-  res.body += all_posts.reverse.join
-  res.body += <<HTML
+#{posts.reverse.map {|post| BBS.to_html(post, nil, 'apost') }.join}
+        </div>
       </div>
     </div>
-  </div>
   </body>
 </html>
 HTML
