@@ -54,18 +54,18 @@ class FsDB
 end
 
 module BBS
-  def make_links(str)
+  def self.make_links(str)
     str.gsub(URI.regexp, '<a href="\&">\&</a>')
   end
 
-  def make_res_anchors(str, id_base = "post")
+  def self.make_res_anchors(str, id_base = "post")
     str.gsub(/(&gt;|＞){1,2}([0-9０-９]+)/) {
       post_id = id_base + $2.tr('０-９', '0-9')
       "<a href=\"##{post_id}\">#{$&}</a>"
     }
   end
 
-  def escape(string)
+  def self.escape(string)
     str = string ? string.dup : ""
     str.gsub!(/&/,  '&amp;')
     str.gsub!(/\"/, '&quot;')
@@ -74,15 +74,15 @@ module BBS
     str
   end
 
-  def show_spaces(string)
+  def self.show_spaces(string)
     str = string ? string.dup : ""
     str.gsub!(/ /,  '&nbsp;')
     str.gsub!(/\n/, '<br>')
     str
   end
+  private_class_method :make_links, :make_res_anchors, :escape, :show_spaces
 
-  module_function
-  def to_html(post, query = nil, id_base = 'post')
+  def self.to_html(post, query = nil, id_base = 'post')
     escaped_content = make_res_anchors(make_links(show_spaces(escape(post.content))), id_base)
     escaped_content.gsub!(query, '<strong>\0</strong>') if query
     <<-HTML
